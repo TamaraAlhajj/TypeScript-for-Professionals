@@ -1,6 +1,7 @@
 # Visual Studio cache/options directory
 .vs/
 node_modules/
+.eslint*
 
 #Exclude tsc generated files
 js/*.map
