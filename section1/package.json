@@ -6,9 +6,10 @@
   "scripts": {
     "test": "node ./lib/index.js"
   },
-  "author": "",
+  "author": "Tamara",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^18.11.8",
     "typescript": "^4.8.4"
   }
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { createDebuggerStatement } from 'typescript'
+import { printCats } from './utils'
 
 let msg: string = 'Hello world'
 msg += ' again'
@@ -154,3 +154,43 @@ numFIFO.pop()
 // unknown is different and safer, you can accept anything into an unknown but will not allow unsafe usage
 // must match usage type definition
 // This can be used as a universal utility, such as when you have a function that must accept any type
+
+// Type Assertion
+// let str: unknown, but later defined as a string
+// const trimmed = (str as string).trim()
+
+// Type Casting
+const abc: string = 'abc'
+const num = +abc
+console.log(num < 7)
+
+// Modules
+// see top of file for import
+// you can also import all with * as utils and access with utils.printCats
+console.log(printCats(10))
+
+// Type declaration
+declare const process: any
+declare const importantNumber: number
+// declarations can be made in a septate *.d.ts file
+// definitely typed is an open source type declaration resource
+// example usage:
+// npm i @types/node will create a declaration file with useful definitions
+
+// Async Await
+const delay = async (ms: number): Promise<void> => await new Promise(resolve => setTimeout(resolve, ms))
+const spaceJourney = async (): Promise<void> => {
+  console.log('Starting our journey though the inner planets...')
+  await delay(2000)
+  console.log('Hello Mercury')
+  await delay(3000)
+  console.log('Hello Venus')
+  await delay(4000)
+  console.log('Hello Earth')
+  await delay(1000)
+  console.log('and Moon')
+  await delay(5000)
+  console.log('Hello Mars')
+}
+
+void spaceJourney()
