@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+/**
+ * SECTION 1 - BASICS
+ */
+
+// Ensure typescript package is installed
+// Initialize typescript config and env with:
+// npx tsc --init --rootdir src --outdir lib
+// To compile, and watch for changes run:
+// npx tsc --watch
+
+import { type } from 'os'
 import { printCats } from './utils'
 
 let msg: string = 'Hello world'
@@ -16,7 +27,10 @@ let notDefined: undefined
 const notPresent: null = null
 
 const penta: symbol = Symbol('star')
-const big: bigint = 24n
+
+// const big: bigint = 24n
+// Note that this produces an error in this case
+// error TS2737: BigInt literals are not available when targeting lower than ES2020.
 
 // Instance Types
 const regexp: RegExp = /ab+c/
@@ -194,3 +208,188 @@ const spaceJourney = async (): Promise<void> => {
 }
 
 void spaceJourney()
+
+/**
+ * SECTION 2 - INTERMEDIATE CONCEPTS
+ */
+
+// Lexical This
+
+class Person {
+  private _age: number
+  constructor (_age: number) {
+    this._age = _age
+  }
+
+  // Setup to produce errors
+  // Recall that these methods are invoked on the calling context
+
+  growOld (): void {
+    this._age++
+  }
+
+  getAge (): number {
+    return this._age
+  }
+
+  // Better method setup - these arrow functions are lexically scoped
+  // arrow functions in js capture this from the surrounding context
+  // so 'this' is what ever it is in the constructor
+  // Thus both usages below will not produce errors, and we needn't worry about correct usage
+  growOld2 = (): void => {
+    this._age++
+  }
+
+  getAge2 = (): number => {
+    return this._age
+  }
+}
+
+const sharath = new Person(29)
+sharath.growOld() // here 'this' is person
+
+// Since js functions are first class they can be stored in a variable
+// However doing that in this case means that the function is not called on any object
+// Result in losing the calling context of 'this'
+
+// Error case example - here 'this' is undefined when growOld() is called
+// const growOld = sharath.growOld()
+// growOld()
+
+// However this works
+const getAge2 = (): number => sharath.getAge2()
+getAge2()
+
+// We would never do this method to variable assignment right?
+// 'real-world' example: setTimeout(sharath.growOld, 1000) again loses context of 'this'
+// However this works:
+setTimeout(sharath.getAge2, 3000)
+
+console.log('On Sharath\'s next birthday he will be aged: ', sharath.getAge())
+
+// readonly modifiers
+// Note: compile time feature
+
+type unmodifiablePoint = {
+  readonly x: number
+  readonly y: number
+}
+
+const point: unmodifiablePoint = {
+  x: 0,
+  y: 0
+}
+
+class UnmodifiableAnimal {
+  // readonly can be combined with other class access modifiers
+  public readonly name: string
+  constructor (name: string) {
+    this.name = name
+  }
+}
+
+const sheep = new UnmodifiableAnimal('black sheep')
+console.log(sheep.name)
+// yet we disallow sheep.name = 'wolf in sheep's clothing'
+
+// Union Types
+
+// Use pipe to create a union type
+// padding: unknown is the naive approach
+// this way we catch any incorrect usage as a compile time error
+
+type PaddingUnionType =
+  | number // initial pipe can be used for readability and has no impact
+  | string // can be split into multiple lines
+
+function padLeft (input: string, padding: PaddingUnionType): string {
+  if (typeof padding === 'number') {
+    return Array(padding + 1).join(' ') + input
+  }
+  if (typeof padding === 'string') {
+    return padding + input
+  }
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  throw new Error(`Expected number or string, got '${padding}'.`)
+}
+padLeft('tabbed text', 4)
+padLeft('big space', '              ')
+
+// Literal Types
+let direction: 'North' | 'East' | 'South' | 'West'
+
+direction = 'North'
+// direction = 'n0r7h'
+direction = 'South'
+
+type DiceValues = 1 | 2 | 3 | 4 | 5 | 6
+function rollDice (): DiceValues {
+  return (Math.floor(Math.random() * 6) + 1) as DiceValues
+}
+console.log('rolled dice: ', rollDice())
+
+// Type Narrowing
+class Cat {
+  meow (): void {
+    console.log('mew')
+  }
+}
+
+class Dog {
+  bark (): void {
+    console.log('woof')
+  }
+}
+
+type FourLeggedAnimal = Cat | Dog
+
+function speak (animal: FourLeggedAnimal): void {
+  if (animal instanceof Cat) {
+    animal.meow()
+  }
+  if (animal instanceof Dog) {
+    animal.bark()
+  }
+}
+
+const mochi = new Cat()
+speak(mochi)
+
+// Discriminated Unions
+type Square = {
+  kind: 'square'
+  size: number
+}
+
+type Rectangle = {
+  kind: 'rectangle'
+  width: number
+  height: number
+}
+
+type Circle = {
+  kind: 'circle'
+  radius: number
+}
+
+type Triangle = {
+  kind: 'triangle'
+  base: number
+  height: number
+}
+
+type Shape =
+  | Square
+  | Rectangle
+  | Circle
+  | Triangle
+
+function area (shape: Shape): number {
+  // typescript can infer the shape's properties if you hover over each value
+  if (shape.kind === 'square') return shape.size * shape.size
+  if (shape.kind === 'rectangle') return shape.width * shape.height
+  if (shape.kind === 'circle') return 2 * Math.PI * shape.radius
+  if (shape.kind === 'triangle') return 0.5 * shape.base * shape.height
+
+  return 0
+}
