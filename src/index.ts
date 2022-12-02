@@ -1,3 +1,8 @@
+/* eslint-disable import/export */
+/**
+ * Typescript course code and notes
+ */
+
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -5,20 +10,26 @@
  * SECTION 1 - BASICS
  */
 
+// Setup //
 // Ensure typescript package is installed
 // Initialize typescript config and env with:
 // npx tsc --init --rootdir src --outdir lib
 // To compile, and watch for changes run:
 // npx tsc --watch
 
+// some imports needed throughout course
+import { assert } from 'console'
+import { randomInt } from 'crypto'
 import { type } from 'os'
+import { emit } from 'process'
 import { printCats } from './utils'
 
+// Basic Intro //
 let msg: string = 'Hello world'
 msg += ' again'
 console.log(msg)
 
-// Primitives
+// Primitives //
 const isPresent: boolean = false
 const magic: number = 66.6
 const hello: string = 'world'
@@ -45,14 +56,14 @@ class Queue<T> {
 
 const queue = new Queue()
 
-// Arrays
+// Arrays //
 let arr: number[] = [1, 2, 3]
 
 arr = [1]
 arr = [1, 2, 3, 4, 5, 6]
 // Type error example: arr = ['hello']
 
-// Tuples
+// Tuples //
 let tuple1: [number, string]
 let tuple2: [number, number]
 
@@ -66,7 +77,7 @@ tuple2 = [0, 0]
 // Err tuple2 = [1,'2'];
 // Err tuple2 = [1,2,3];
 
-// Object types and type aliases
+// Object types and type aliases //
 type Point = { x: number, y: number }
 const center: Point = {
   x: 0,
@@ -78,11 +89,11 @@ const unit: Point = {
   y: 1
 }
 
-// TS allows modification of const variable properties
+// JS and thus TS allow for modification of const variable properties
 unit.x = 5
 center.y = 5
 
-// Functions
+// Functions //
 function add (a: number, b: number): number {
   return a + b
 }
@@ -91,7 +102,7 @@ function log (message: string): void {
   console.log('LOG: ', message)
 }
 
-// handling rest params
+// handling rest params must be with array types
 function sum (...values: number[]): number {
   return values.reduce((previous, current) => {
     return previous + current
@@ -100,14 +111,16 @@ function sum (...values: number[]): number {
 
 sum(1, 2, 3, 4, 5)
 
-// First class functions (stored func in js variable)
+// First class functions //
+// Simply a stored func in js variable
+// arrow functions
 
 type Addition = (...values: number[]) => number
 let getSum: Addition
 getSum = (a: number, b: number) => a + b
 getSum = (a: number, b: number, c: number) => a + b + c
 
-// Structural Typing
+// Structural Typing //
 type User = { id: string }
 type Product = { id: string }
 
@@ -121,11 +134,11 @@ let pointA: Point2D = { x: 0, y: 0 }
 const pointB: Point3D = { x: 0, y: 0, z: 0 }
 
 // TS allows for extra info, in assignment function params, etc
-// Called Duck-Typing (if it walks like a duck...)
+// Called Duck-Typing (if it walks like a duck, talks like a duck...)
 // Of course this doesn't work the other way around, because of missing info
 pointA = pointB
 
-// Classes
+// Classes //
 class Animal {
   // private is accessible only within the class
   // protected is accessible from within children as well
@@ -144,8 +157,7 @@ class Animal {
 const cat = new Animal('Mochi')
 cat.catch(10)
 
-// Generics
-
+// Generics //
 const numFIFO = new Queue<number>()
 
 queue.push(123)
@@ -157,7 +169,7 @@ numFIFO.push(22)
 // ERR: numFIFO.push('123')
 numFIFO.pop()
 
-// any vs. unknown
+// any vs. unknown //
 // universal super types
 // any var can be assigned them
 
@@ -169,21 +181,21 @@ numFIFO.pop()
 // must match usage type definition
 // This can be used as a universal utility, such as when you have a function that must accept any type
 
-// Type Assertion
+// Type Assertion //
 // let str: unknown, but later defined as a string
 // const trimmed = (str as string).trim()
 
-// Type Casting
+// Type Casting //
 const abc: string = 'abc'
 const num = +abc
 console.log(num < 7)
 
-// Modules
+// Modules //
 // see top of file for import
 // you can also import all with * as utils and access with utils.printCats
 console.log(printCats(10))
 
-// Type declaration
+// Type declaration //
 declare const process: any
 declare const importantNumber: number
 // declarations can be made in a septate *.d.ts file
@@ -191,7 +203,7 @@ declare const importantNumber: number
 // example usage:
 // npm i @types/node will create a declaration file with useful definitions
 
-// Async Await
+// Async Await //
 const delay = async (ms: number): Promise<void> => await new Promise(resolve => setTimeout(resolve, ms))
 const spaceJourney = async (): Promise<void> => {
   console.log('Starting our journey though the inner planets...')
@@ -213,7 +225,7 @@ void spaceJourney()
  * SECTION 2 - INTERMEDIATE CONCEPTS
  */
 
-// Lexical This
+// Lexical This //
 
 class Person {
   private _age: number
@@ -267,7 +279,7 @@ setTimeout(sharath.getAge2, 3000)
 
 console.log('On Sharath\'s next birthday he will be aged: ', sharath.getAge())
 
-// readonly modifiers
+// readonly modifiers //
 // Note: compile time feature
 
 type unmodifiablePoint = {
@@ -292,7 +304,7 @@ const sheep = new UnmodifiableAnimal('black sheep')
 console.log(sheep.name)
 // yet we disallow sheep.name = 'wolf in sheep's clothing'
 
-// Union Types
+// Union Types //
 
 // Use pipe to create a union type
 // padding: unknown is the naive approach
@@ -315,7 +327,7 @@ function padLeft (input: string, padding: PaddingUnionType): string {
 padLeft('tabbed text', 4)
 padLeft('big space', '              ')
 
-// Literal Types
+// Literal Types //
 let direction: 'North' | 'East' | 'South' | 'West'
 
 direction = 'North'
@@ -328,7 +340,8 @@ function rollDice (): DiceValues {
 }
 console.log('rolled dice: ', rollDice())
 
-// Type Narrowing
+// Type Narrowing //
+// Example using a union type and narrowing with instanceof
 class Cat {
   meow (): void {
     console.log('mew')
@@ -355,7 +368,8 @@ function speak (animal: FourLeggedAnimal): void {
 const mochi = new Cat()
 speak(mochi)
 
-// Discriminated Unions
+// Discriminated Unions //
+// Take multiple types with a shared member, in this case kind
 type Square = {
   kind: 'square'
   size: number
@@ -385,7 +399,8 @@ type Shape =
   | Triangle
 
 function area (shape: Shape): number {
-  // typescript can infer the shape's properties if you hover over each value
+  // Discriminating by kind, typescript can infer the shape's properties
+  // See this by hovering over each value
   if (shape.kind === 'square') return shape.size * shape.size
   if (shape.kind === 'rectangle') return shape.width * shape.height
   if (shape.kind === 'circle') return 2 * Math.PI * shape.radius
@@ -393,3 +408,244 @@ function area (shape: Shape): number {
 
   return 0
 }
+
+// Class Parameter Properties //
+// Remove redundant variables within classes by using class access modifiers
+// With Public, Private, or Protected we create these variables for use in the instance
+// So we can declare them as properties simply with the modifiers
+// Rather than setting this.name = to the passed name etc.
+class Angel {
+  constructor (
+    public name: string,
+    public fallen: boolean
+  ) {}
+}
+
+const gabriel = new Angel('Gabriel', false)
+const lucifer = new Angel('Lucifer', true)
+
+console.log('Angel: %s, Has Fallen: %s', gabriel.name, gabriel.fallen)
+console.log('Angel: %s, Has Fallen: %s', lucifer.name, lucifer.fallen)
+
+// Strict Compiler Option //
+// strict is actually a collection of options in the tsconfig
+// by default true
+
+// Some consequences of setting to false
+// No compile time errors...
+// for unprovided type annotations, instead infers type any
+// instances initialized without member properties
+// when we try to access properties of a variable that may or may not exists
+
+// false - dynamic
+// true - type safety
+
+// null vs undefined
+
+function logVowels (value: string): string[] | null {
+  return (value.match(/[aeiou]/gi))
+}
+
+logVowels('hello') // returns array with 2 vowels found
+logVowels('sky') // returns null
+
+// truthy statements
+// null == null
+// undefined == undefined
+// undefined == null ***
+
+// falsy statements
+// '' == null
+// 0  == null
+// false == null
+
+// So we can use double equals to filter out both null and undefined
+
+// Intersection types //
+
+type Client = {
+  name: string
+}
+
+type Email = {
+  address?: string
+}
+
+type Phone = {
+  number: number
+}
+
+type ContactDetails = Client & Email & Phone & {
+  hasPurchased: boolean
+}
+
+const myClient1: ContactDetails = {
+  name: 'Eve',
+  address: 'taylor@email.com',
+  number: 123456789,
+  hasPurchased: true
+}
+
+// Optional modifiers //
+// members with a '?'
+// undefined is automatically set as possible value of an optional modified
+// so you can set it explicitly to undefined
+// you cannot set it to null however, that must be an explicit type declaration
+
+const myClient2: ContactDetails = {
+  name: 'Layla',
+  number: 123456789,
+  hasPurchased: true
+}
+
+// Non-null Assertion Operator //
+// postfix exclamation mark
+// myClient!.email
+// then it is up to you as the dev to ensure that the assertion is indeed not null
+// this is not a type safe practice, better to refactor and throw error if null
+
+// Interfaces //
+// type vs interface - mostly allowed to do the same things
+// types operate on assignment similar to setting a variable
+// interfaces operate on body block similar to a js class
+
+// extracted type alias, by using vs code lightbulb
+type availableWoodTypes = null | 'soft' | 'hard'
+
+interface Furniture {
+  wood: availableWoodTypes
+  legs: 0 | 3 | 4
+  painted: boolean
+}
+
+const dinnerTable: Furniture = {
+  wood: 'hard',
+  legs: 4,
+  painted: false
+}
+
+// Interface Declaration Merging //
+// not supported by types
+
+export interface Request {
+  body: any
+}
+
+export interface Request {
+  json: any
+}
+
+// our app merges both definitions
+function handleRequest (req: Request): void {
+  console.log(req.body)
+  console.log(req.json)
+}
+
+// Types vs Interfaces //
+// types can extract types into type aliases
+// interfaces do not support this, so in these cases you need to use types
+// Tip: you can get away with almost always defaulting to types...
+// ...except for specific cases like declaration merging
+// usage of types can enforce structure for better code for consistency
+
+// never type //
+
+// can be used for function that will never (should never) return something
+const fail = (message: string): never => {
+  throw new Error(message)
+}
+
+// only never can be assigned to never
+let _ensureAllCasesAreCovered: never
+// _ensureAllCasesAreCovered = someUnhandledInput; will error out in a function
+// you can use this to make functions more easily iterable, factorable, or added to
+
+/**
+ * SECTION 3 - ADVANCED CONCEPTS
+ */
+
+// implements keyword //
+
+// same as js...
+// eg Cat implements Animal, all functions in Animal must be in Cat
+
+// Definite Assignment Assertion //
+
+// exclamation mark can be used before assignment
+// as seen before, we again should be careful to ensure that it will indeed exist
+let primaryColor!: string
+
+function randPrimaryColor (): void {
+  const index = randomInt(2)
+  const colors = ['red', 'blue', 'yellow']
+  primaryColor = colors[index]
+}
+
+randPrimaryColor()
+
+// User Defined Type Guards //
+// function that uses the patten "input is of type x" and returns boolean
+
+type Flower = {
+  species: string
+  scent: 'sweet' | 'spicy' | 'pungent' | 'light'
+  color: 'red' | 'pink' | 'white' | 'yellow' | 'multi'
+}
+
+type Tree = {
+  species: string
+  height: number
+  wood: 'hard' | 'soft'
+}
+
+type Plant = Flower | Tree
+
+function isFlower (plant: Plant): plant is Flower {
+  return (plant as Flower).scent !== undefined
+}
+
+function isTree (plant: Plant): plant is Tree {
+  return (plant as Tree).wood !== undefined
+}
+
+function plantsInMyGarden (plant: Plant): string {
+  if (isFlower(plant)) return plant.scent
+  if (isTree(plant)) return plant.wood
+  const _ensure: never = plant
+  return _ensure
+}
+
+// Assertion Functions //
+
+function exists (person: unknown, message: string): asserts person is string {
+  if (typeof person !== 'string') throw Error('I am not') // redundant
+  else console.log(`${person} says: ${message}, therefore I am`)
+}
+
+const maybePerson = 'Rene'
+exists(maybePerson, 'I think')
+
+// Use type guards for app code
+// Use assertions for tests
+
+// Function Overloading //
+
+// Call Signatures //
+
+// Abstract Classes //
+
+// Index Signatures //
+
+// Readonly Arrays and Tuples //
+
+// Double Assertion //
+
+// const Assertion //
+
+// this parameter //
+
+// Generic Constraints //
+
+/**
+ * SECTION 4 - EXPERT
+ */
