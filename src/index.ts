@@ -629,22 +629,156 @@ exists(maybePerson, 'I think')
 // Use assertions for tests
 
 // Function Overloading //
+// same as always but the multiple signatures have specific types
+// compile time only, not in output js
+function overloaded (string: string): void
+function overloaded (string: string[]): void
+function overloaded (string: string | string[]): void {}
+overloaded('str')
 
 // Call Signatures //
+type bodyBlockSyntax = {
+  // with the new keyword, and return class members we can use this as a class type
+  new(a: number, b: number): { classMember: number }
+  (a: number, b: number): number
+  (a: number, b: number, c: number): number // we can declare func overloads
+  debugName?: string
+}
 
 // Abstract Classes //
+abstract class Command {
+  abstract cmd (): string
+
+  execute (): void {
+    console.log('Executing: ', this.cmd())
+  }
+}
+
+class GitUndoCommand extends Command {
+  cmd (): string {
+    return ('git reset --soft HEAD~1')
+  }
+}
 
 // Index Signatures //
+type Dictionary<T> = {
+  [key: string | number]: T
+}
+
+type Dish = {
+  name: string
+  type: 'mezza' | 'main' | 'dessert'
+}
+
+const menu: Dictionary<Dish> = {
+  tabouleh: { name: 'Tabouleh', type: 'mezza' },
+  waraq: { name: 'Waraq 3ineb', type: 'mezza' },
+  koubeh: { name: 'Koubeh', type: 'mezza' },
+  maqloubeh: { name: 'Maqloubeh ma3 La7meh', type: 'main' },
+  knaffeh: { name: 'Knaffeh', type: 'dessert' }
+}
+
+type Employee = { name: string }
+
+const employeeIndex: Dictionary<Employee> = {
+  123: { name: 'Sally Hans' },
+  478: { name: 'Mary Magdalene' },
+  305: { name: 'Doris Day' },
+  278: { name: 'Layla Mourad' }
+}
 
 // Readonly Arrays and Tuples //
 
+// Preferred
+type Neat = readonly number[]
+// eslint-disable-next-line @typescript-eslint/array-type
+type Long = ReadonlyArray<number>
+
+// without readonly here, the input array is overridden with the operations
+function reverseSorted (input: readonly number[]): number[] {
+  return input.slice().sort((a, b) => a - b).reverse()
+}
+
+const start = [101, 21, 5, 2, 9, 13, 10, 3894, 83, 13948, 11, 3]
+const end = reverseSorted(start)
+
+console.table({ start, end })
+
+// tuple is simply an array type of fixed length 2
+// similarly original point cannot be mutated because it is readonly
+type Points = readonly [number, number]
+
 // Double Assertion //
+// Avoid and use with caution
+// Could be helpful in migrating some js code
+let point2: Point2D = { x: 0, y: 0 }
+let point3: Point3D = { x: 0, y: 0, z: 0 }
+const dish: Dish = { name: 'Stew,', type: 'main' }
+
+point2 = point3 // structure of 2D is a subset of 3D so this is allowed
+
+// point3 = point2
+// z axis is missing in 2D type, 3D cannot be contained in 2D
+// not allowed, error
+
+point3 = point2 as Point3D // tells ts to trust us
+
+// dish = point3 // Error
+// point3 = dish // Error
+
+// point3 = dish as Point3D // Error
+// ts finds the difference to great, and tells us this may be a mistake
+point3 = dish as unknown as Point3D // tells ts to trust us
+
+// Why? unknown is allowed one-way compatibility with all types
 
 // const Assertion //
+// Technique to increase type safety of objects
+// All obj members are inferred to be readonly
+const ruler = {
+  name: 'Sargon',
+  empire: 'Akkadian'
+} as const
+
+// here empire is not type string but rather the literal value 'Akkadian'
+const goddess = {
+  name: 'Ishtar',
+  empire: 'Akkadian' as const
+}
+
+// still mutable
+goddess.name = 'Inanna'
 
 // this parameter //
+// calling context
+// obj implicitly passed by the js runtime
+// dependent on how it is invoked
+
+// ts supports annotating what this should be
+// must be the first param within the fc declaration
+// it is a fake param and not part of the generated js
+// only used for compile time checking
+function double (this: { value: number }): number {
+  return this.value * 2
+}
+
+const valid = {
+  value: 3,
+  double
+}
+const invalid = {
+  valve: 3,
+  double
+}
+
+valid.double()
+// invalid.double()
+
+console.log('double value on calling context: ', valid.double())
 
 // Generic Constraints //
+// <T extends someOtherType>
+// T & {name: string}
 
 /**
  * SECTION 4 - EXPERT
