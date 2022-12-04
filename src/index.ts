@@ -6,6 +6,8 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+// TS Docs: https://www.typescriptlang.org/docs/
+
 /**
  * SECTION 1 - BASICS
  */
@@ -561,7 +563,7 @@ let _ensureAllCasesAreCovered: never
 // you can use this to make functions more easily iterable, factorable, or added to
 
 /**
- * SECTION 3 - ADVANCED CONCEPTS
+ * SECTION 3 - ADVANCED CONCEPTS ^__^
  */
 
 // implements keyword //
@@ -893,11 +895,258 @@ type withIsArrayNum = IsArray<number[]> // number
 type nonIsArray     = IsArray<string> // never because we didn't pass an array
 
 // Mapped Types //
+// consists of a loop var, union we loop over and an output
+// [Item in Union]: Output
+
+type MappedPoint = {
+  readonly [Item in keyof Point]: Point[Item]
+}
+
+type ReadonlyGeneric<T> = {
+  readonly [Item in keyof T]: T[Item]
+}
+
+// Actually already built into ts!
+// using Readonly<T>
+const root: Readonly<Point> = {
+  x: 0,
+  y: 0
+}
 
 // Mapped type modifiers //
+// + (optional, for readability) means add it
+// - means remove it
+// ? means optional member
+// Example
+type MappedGeneric<T> = {
+  -readonly [Item in keyof T]?: T[Item]
+}
 
 // Template Literal Type //
+
+// ts also supports literal types
+// we use ${} as in js and we can input any type in the curly braces
+type CSSValue =
+  | `${number}px`
+  | `${number}em`
+  | `${number}rem`
 
 /**
  * Section 5 - SUPER ᕙ(`▿´)ᕗ
  */
+
+// Partial<T> //
+// transform makes all properties optional
+// Part of standard ts library definition as such
+// export type Partial<T> = {
+//   [P in keyof T]?: T[P]
+// }
+
+class State<T> {
+  constructor (public curr: T) {}
+
+  update (next: Partial<T>): T {
+    this.curr = { ...this.curr, ...next }
+    return this.curr
+  }
+}
+
+const state = new State({ x: 0, y: 0 })
+// with partial we can update/pass one value
+console.log('current state: ', state.update({ y: 123 }))
+
+// Required<T> //
+// transform makes all properties required (removes optional markers)
+// Part of standard ts library definition as such
+// export type Required<T> = {
+//   [P in keyof T]-?: T[P]
+// }
+
+type ClothingConfig = {
+  color?: string
+  size?: string
+}
+
+// we can now ensure default values without altering the original type
+class Clothing {
+  private readonly config: Required<ClothingConfig>
+
+  constructor (config: ClothingConfig) {
+    this.config = {
+      color: config.color ?? 'black',
+      size: config.size ?? 'xs'
+    }
+  }
+}
+
+// Readonly<T> //
+// transform makes all properties readonly
+// Part of standard ts library definition as such
+// export type Readonly<T> = {
+//   readonly [Item in keyof T]: T[Item]
+// }
+
+const makeReadonly = <T>(obj: T): Readonly<T> => {
+  return Object.freeze({ ...obj })
+}
+
+const values = { 123: 'abc', 987: 'xyz' }
+
+const readonlyValues = makeReadonly(values)
+
+// Record<K,V> //
+// Record = data structure that stores related properties
+// think table within relational db
+// js has key value pairs within objects
+
+// the internals, construct a type with properties K of type T
+// export type Record<K,T> = {
+//   [P in K]: T
+// }
+
+type Role = 'admin' | 'owner' | 'collaborator' | 'reviewer'
+
+const peopleWithRoles: Record<Role, string[]> = {
+  owner: ['Peter', 'Paul', 'Mary'],
+  admin: ['Tolkien', 'Jane Goodall'],
+  collaborator: ['Mark Twain', 'Jules Verne'],
+  reviewer: ['Matt Haig', 'Isaac Asimov']
+}
+
+// can also be used as a short had a shorthand for a simple types
+type PageInfo = Record<
+'home' | 'login' | 'contact',
+{ id: string, title: string }
+>
+
+// AutoComplete Literal Unions Problem //
+// Example fix
+type Padding = 'small' | 'medium' | 'large' | (string & {})
+
+const paddingNowHasAutoCompleteValues: Padding = 'large'
+const paddingAlsoAllowsAnyStringValue: Padding = '8px'
+
+// Project References //
+// within the tsconfig, set composite to true within the project you want to reference
+// example: lib project is ready for consumption with an app project
+// this way we avoid unnecessary/messy cross imports
+
+// to update our scripts
+// project flag, only build project: tsc -p .
+// build flag, builds all referenced projects as well: tsc --build .
+// watch will also be updated on change
+
+// undefined vs optional //
+// behavior differences
+type exampleOptional = {
+  // truly optional, can choose to provide nothing
+  member?: string
+}
+
+type exampleUnion = {
+  // required
+  // must provide specified value or the value of undefined
+  member: string | undefined
+}
+
+// when to use each
+// default to use optional
+// try to only use undefined for specific use cases
+
+// Example optional params cannot precede required params
+// function logExample(optionalParam?: Error, message: string)
+
+// Let's say you are working with a framework that requires this structure
+// rather than refactor every case where it is used you can use union undefined
+// function logExample (optionalParam: Error | undefined, message: string)
+
+// satisfies operator //
+
+type Color = ColorString | ColorRGB
+type ColorString = 'red' | 'yellow' | 'blue' | 'purple'
+type ColorRGB = [red: number, green: number, blue:number]
+
+type Theme = Record<string, Color>
+
+// .. works as expected
+const theme: Theme = {
+  primary: 'red',
+  secondary: 'yellow',
+  tertiary: [0, 255, 0]
+}
+
+// Example doesn't work in our env
+// const theme = {
+//   primary: 'red',
+//   secondary: 'yellow',
+//   tertiary: [0, 255, 0]
+// } satisfies Theme
+
+// this actually works out of the box, no satisfies needed!
+const [r, g, b] = theme.secondary
+
+// PropertyKey //
+// string | number | symbol
+let example: PropertyKey
+
+// ThisType<T> Utility //
+// critical in some open source libs like React
+
+// if we are expecting a specific type for this we have to anotate what it will
+// Example: ThisType<CSSValue>, ThisType<number>
+
+type MathUtil = {
+  double: () => number
+  half: () => number
+  print: () => string
+}
+
+// all usages of 'this' will refer to a value of type number, else compile time error
+export const math: MathUtil & ThisType<{ value: number, display: string }> = {
+  double () {
+    return this.value * 2
+  },
+  half () {
+    return this.value / 2
+  },
+  print () {
+    return this.display
+  }
+}
+
+// Awaited<T> Utility //
+// nested promises will infer the final value (not nested)
+// the await keyword will await for all promises to resolve
+// same goes for Awaited<T>
+// the final resulting type will be the recursively unwrapped value
+// Awaited<T> will resolve when object is no longer thenable
+// that means that there is no more need for unwrapping
+// and will resolve to type T
+// or error case which resolves to never
+
+// String Manipulation Utilities //
+// intrinsic methods
+type abba = Uppercase<'abba'>
+type acdc = Lowercase<'ACDC'>
+type helloThere = Capitalize<'hello there!'>
+type screaming = Uncapitalize<'AHH'>
+
+// Mapped Types as Clauses //
+type TODOs = {
+  list: string[]
+  type: 'housework' | 'professional' | 'shopping' | 'misc'
+}
+
+const groceries: TODOs = {
+  list: ['apples', 'bananas', 'spinach', 'cheese', 'lamb'],
+  type: 'shopping'
+}
+
+type Setters = {
+  // intersection with string ensures all `setBlah` key names will be only valid strings
+  [K in keyof TODOs & string as `set${Capitalize<K>}`]: (value: TODOs[K]) => void
+}
+
+type Getters = {
+  [K in keyof TODOs & string as `get${Capitalize<K>}`]: () => TODOs[K]
+}
