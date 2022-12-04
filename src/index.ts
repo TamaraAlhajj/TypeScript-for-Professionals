@@ -26,13 +26,13 @@ import { printCats } from './utils'
 
 // Basic Intro //
 let msg: string = 'Hello world'
-msg += ' again'
+msg            += ' again'
 console.log(msg)
 
 // Primitives //
 const isPresent: boolean = false
-const magic: number = 66.6
-const hello: string = 'world'
+const magic: number      = 66.6
+const hello: string      = 'world'
 
 let notDefined: undefined
 const notPresent: null = null
@@ -44,8 +44,8 @@ const penta: symbol = Symbol('star')
 // error TS2737: BigInt literals are not available when targeting lower than ES2020.
 
 // Instance Types
-const regexp: RegExp = /ab+c/
-const array: number[] = [1, 2, 3]
+const regexp: RegExp   = /ab+c/
+const array: number[]  = [1, 2, 3]
 const set: Set<number> = new Set(array)
 
 class Queue<T> {
@@ -90,7 +90,7 @@ const unit: Point = {
 }
 
 // JS and thus TS allow for modification of const variable properties
-unit.x = 5
+unit.x   = 5
 center.y = 5
 
 // Functions //
@@ -121,16 +121,16 @@ getSum = (a: number, b: number) => a + b
 getSum = (a: number, b: number, c: number) => a + b + c
 
 // Structural Typing //
-type User = { id: string }
+type User    = { id: string }
 type Product = { id: string }
 
-const user: User = { id: 'user-a123' }
+const user: User       = { id: 'user-a123' }
 const product: Product = { id: 'product-a123' }
 
 type Point2D = { x: number, y: number }
 type Point3D = { x: number, y: number, z: number }
 
-let pointA: Point2D = { x: 0, y: 0 }
+let pointA: Point2D   = { x: 0, y: 0 }
 const pointB: Point3D = { x: 0, y: 0, z: 0 }
 
 // TS allows for extra info, in assignment function params, etc
@@ -187,7 +187,7 @@ numFIFO.pop()
 
 // Type Casting //
 const abc: string = 'abc'
-const num = +abc
+const num         = +abc
 console.log(num < 7)
 
 // Modules //
@@ -204,7 +204,7 @@ declare const importantNumber: number
 // npm i @types/node will create a declaration file with useful definitions
 
 // Async Await //
-const delay = async (ms: number): Promise<void> => await new Promise(resolve => setTimeout(resolve, ms))
+const delay        = async (ms: number): Promise<void> => await new Promise(resolve => setTimeout(resolve, ms))
 const spaceJourney = async (): Promise<void> => {
   console.log('Starting our journey though the inner planets...')
   await delay(2000)
@@ -576,7 +576,7 @@ let _ensureAllCasesAreCovered: never
 let primaryColor!: string
 
 function randPrimaryColor (): void {
-  const index = randomInt(2)
+  const index  = randomInt(2)
   const colors = ['red', 'blue', 'yellow']
   primaryColor = colors[index]
 }
@@ -700,7 +700,7 @@ function reverseSorted (input: readonly number[]): number[] {
 }
 
 const start = [101, 21, 5, 2, 9, 13, 10, 3894, 83, 13948, 11, 3]
-const end = reverseSorted(start)
+const end   = reverseSorted(start)
 
 console.table({ start, end })
 
@@ -713,7 +713,7 @@ type Points = readonly [number, number]
 // Could be helpful in migrating some js code
 let point2: Point2D = { x: 0, y: 0 }
 let point3: Point3D = { x: 0, y: 0, z: 0 }
-const dish: Dish = { name: 'Stew,', type: 'main' }
+const dish: Dish    = { name: 'Stew,', type: 'main' }
 
 point2 = point3 // structure of 2D is a subset of 3D so this is allowed
 
@@ -762,7 +762,7 @@ function double (this: { value: number }): number {
   return this.value * 2
 }
 
-const valid = {
+const valid   = {
   value: 3,
   double
 }
@@ -781,5 +781,123 @@ console.log('double value on calling context: ', valid.double())
 // T & {name: string}
 
 /**
- * SECTION 4 - EXPERT
+ * SECTION 4 - EXPERT (✿◠‿◠)
+ */
+
+// typeof Type Operator //
+// Useful for js migration
+
+const refactoredVariable = {
+  originalMember: 0,
+  newMember: 0
+}
+
+// new type out of refactored code without having to manually create it
+type newType = typeof refactoredVariable
+
+const preExistingCode: newType = {
+  originalMember: 4,
+  newMember: 5
+}
+
+const apiResponse = {
+  data: 'stuff',
+  user: {
+    id: 123,
+    email: 'blah@email.com'
+  },
+  pull_requests: {
+    open: 2,
+    merged: 101,
+    closed: 4
+  }
+}
+
+// new type out of given structure
+function getOpenPRs (res: typeof apiResponse): number {
+  return res.pull_requests.open
+}
+
+// Lookup Type //
+// rather than extract type into new exported type
+// similar to looking up member of js object
+
+// say we have a collection of member types under exported SubmitRequest type
+// and that one member is payment: {token: string}
+// return type example
+// someFunc(): SubmitRequest['payment']
+
+// What if the member is a nested array? Similarly...
+// someFunc(): SubmitRequest['payment']['nestedKey'][0]
+
+// keyof Type Operator //
+type Weather = {
+  UV: 'low' | 'med' | 'high' | 'extreme'
+  humidity: `${number} %`
+  wind: `${number} km/h`
+  temp: number
+}
+
+const weatherToday: Weather = {
+  UV: 'low',
+  humidity: '63 %',
+  wind: '32 km/h',
+  temp: -2
+}
+
+// 2 different approaches
+// we can use these approaches for any function, in this case a getter
+// explicit typing
+function getWeatherDetail (obj: Weather, key: keyof Weather): Weather[keyof Weather] {
+  return obj[key]
+}
+// more abstract
+function getWeatherDetailAgain<Obj, Key extends keyof Obj> (obj: Obj, key: Key): Obj[Key] {
+  return obj[key]
+}
+
+const todaysUV   = getWeatherDetail(weatherToday, 'UV')
+const todaysTemp = getWeatherDetailAgain(weatherToday, 'temp')
+// const fakeMember = getWeatherDetailAgain(weatherToday, 'fake')
+
+console.log({ todaysUV, todaysTemp })
+
+// Conditional Types //
+// ternary check
+type IsNumber<T> =
+  T extends number
+    ? 'number'
+    : 'other'
+
+type withNumber = IsNumber<number> // literal number
+type nonNumber  = IsNumber<string> // literal other
+
+// Conditional Types with Unions //
+type Verbose = string | never
+type Concise = string
+
+type SomeUnion<T> = T extends null | undefined ? never : T
+type Example      = SomeUnion<string | null>
+type Expanded     = SomeUnion<string> | SomeUnion<null>
+// gets mapped to string
+// because what is inferred is string | never which concisely is just string
+
+// infer keyword and `ReturnType<T>` //
+type IsArray<T> =
+  T extends Array<infer Member>
+    ? Member
+    : never
+
+type withIsArray    = IsArray<string[]> // string
+type withIsArrayNum = IsArray<number[]> // number
+type nonIsArray     = IsArray<string> // never because we didn't pass an array
+
+// Mapped Types //
+
+// Mapped type modifiers //
+
+// Template Literal Type //
+
+/**
+ * Section 5 - SUPER ᕙ(`▿´)ᕗ
  */
